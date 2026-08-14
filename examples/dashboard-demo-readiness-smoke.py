@@ -18,6 +18,7 @@ BASE_COMMANDS = [
     ("launchagent status output", [sys.executable, "examples/macos-dashboard-launchagent-status-smoke.py"], REPO_ROOT),
     ("promotion gate structured contract", [sys.executable, "examples/promotion-gate-smoke.py"], REPO_ROOT),
     ("dashboard home route", ["npm", "run", "smoke:home-route"], DASHBOARD_DIR),
+    ("dashboard English copy contract", ["npm", "run", "smoke:english-copy"], DASHBOARD_DIR),
     ("dashboard usage/progress source contract", ["npm", "run", "smoke:usage-progress"], DASHBOARD_DIR),
 ]
 
