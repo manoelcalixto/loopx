@@ -2335,7 +2335,7 @@ A first useful UI can be built from the export alone:
   auxiliary source controls, metrics, and raw drill-down, because the
   dashboard is a user decision surface rather than an agent CLI mirror.
 - Metrics: `ok`, `goal_count`, `run_count`, and contract summary.
-- Canonical home: the default dashboard route should render a Chinese-first
+- Canonical home: the default dashboard route should render an English-first
   control-plane home over the shared global status source when available. It
   should emphasize project cards, each project's top four todos with per-item
   status, true user todos, agent-priority todos, quota/guard state, and latest

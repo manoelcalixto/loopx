@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Browser-level smoke for the canonical Chinese-first dashboard home.
+// Browser-level smoke for the canonical English-first dashboard home.
 
 import { spawn } from "node:child_process";
 import { createRequire } from "node:module";
@@ -164,12 +164,12 @@ const goalSpecs = [
   {
     id: "loopx-meta",
     domain: "loopx-fixture",
-    status: "dashboard_home_chinese_operator_copy_contract",
+    status: "dashboard_home_english_copy_contract",
     waiting_on: "codex",
     quota: { ...quotaEligible, spent_slots: 9 },
     userTodos: { open: 0, done: 1, total: 1, next: null },
     userTodoItems: [
-      { done: true, text: "用户确认分享页应以中文控制面为主屏。" },
+      { done: true, text: "The user confirmed English as the dashboard-owned home language." },
     ],
     agentTodos: { open: 3, done: 1, total: 4, next: "拆分 dependency blocker 和 current-goal blocker。" },
     agentTodoItems: [
@@ -202,7 +202,7 @@ const goalSpecs = [
     },
     latest: {
       generated_at: "2026-01-01T00:03:00+00:00",
-      classification: "dashboard_home_chinese_operator_copy_contract",
+      classification: "dashboard_home_english_copy_contract",
       delivery_batch_scale: "multi_surface",
       delivery_outcome: "primary_goal_outcome",
       health_check: "fixture home copy contract",
@@ -301,7 +301,7 @@ const statusFixture = {
       items: [
         {
           goal_id: "loopx-meta",
-          status: "dashboard_home_chinese_operator_copy_contract",
+          status: "dashboard_home_english_copy_contract",
           waiting_on: "codex",
           quota_state: "eligible",
           priority: "P1",
@@ -680,7 +680,7 @@ async function assertDecisionFrameVisible(page, label) {
   if (metrics.left < 0 || metrics.right > metrics.viewportWidth || metrics.top < 0 || metrics.bottom > metrics.viewportHeight) {
     throw new Error(`${label} decision frame is not fully visible: ${JSON.stringify(metrics)}`);
   }
-  const requiredFrameText = ["等待方", "推荐动作", "安全边界", "首个用户 Todo", "最高优 Agent Todo"];
+  const requiredFrameText = ["Waiting on", "Recommended action", "Safety boundary", "First user Todo", "Top Agent Todo"];
   const missing = requiredFrameText.filter((text) => !metrics.text.includes(text));
   if (missing.length) {
     throw new Error(`${label} decision frame missing labels: ${missing.join(", ")}`);
@@ -773,35 +773,35 @@ async function main() {
 
     const body = await page.locator("body").innerText();
     const required = [
-      "把多项目 Agent 工作变成可管理的 Todo、证据和配额",
+      "Turn multi-project agent work into manageable Todos, evidence, and quota",
       "0617 User Gate",
       "请确认 owner 选项 A/B 的取舍",
       "Creator Operator",
-      "热点",
-      "合成案例",
-      "Peer Agent 自迭代",
-      "需要 Codex recovery",
-      "排序器 / 跨域证据",
+      "Trends / insights / corpus",
+      "Synthetic case",
+      "Peer Agent Self-Iteration",
+      "Codex recovery required",
+      "ranker or cross-domain evidence",
       "具体 blocker",
       "LoopX Meta",
-      "配额守卫",
-      "状态写回",
-      "第一屏决策帧",
-      "等待方",
-      "推荐动作",
-      "安全边界",
-      "首个用户 Todo",
-      "最高优 Agent Todo",
+      "Quota guard",
+      "State writeback",
+      "First-screen decision frame",
+      "Waiting on",
+      "Recommended action",
+      "Safety boundary",
+      "First user Todo",
+      "Top Agent Todo",
       "fixture stop condition",
       "Top-4 Todo",
-      "可自动推进候选",
-      "待用户",
-      "待 Agent",
-      "已完成",
-      "依赖阻塞",
-      "决策需 rebase",
-      "审批或转交前先重读",
-      "这不是仓库回滚",
+      "Automatic advancement candidates",
+      "Waiting for user",
+      "Waiting for Agent",
+      "Done",
+      "Dependency blocker",
+      "Decision rebase required",
+      "Re-read current control-plane state before approval or handoff",
+      "this is not a repository rollback",
       "推进与 owner 决策独立的 safe side path",
       "拆分依赖阻塞和当前目标阻塞",
     ];
