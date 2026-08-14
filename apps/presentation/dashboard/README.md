@@ -122,7 +122,7 @@ npm run build
 npm run dev
 ```
 
-The default screen is the Chinese-first control-plane home. It is meant to
+The default screen is the English-first control-plane home. It is meant to
 answer the operator's first questions before raw status drill-down: which
 project line is active, which user todo is truly blocking, which agent todo is
 high priority, which quota/guard state applies, and what evidence has already
@@ -130,7 +130,7 @@ been written back. It loads the shared global status source by default when the
 loopback global server is available, so multi-project state is visible without
 passing `view=share` or opening a debugging table.
 Because this screen is the operator-facing home, it translates raw machine
-status into Chinese decision copy. Exact tokens such as `single_surface`,
+status into English decision copy. Exact tokens such as `single_surface`,
 `focus_wait`, or `quota_slot_spent` may remain useful in `?view=ops` and packet
 drill-downs, but the home should foreground user todos, agent priorities,
 quota guard judgments, and evidence writeback in human-readable terms.
@@ -313,7 +313,7 @@ node examples/dashboard-operator-gate-browser-smoke.mjs
 
 The home browser smoke protects the canonical control-plane home. It uses a
 public-safe four-project fixture, opens the root route without `view=share`,
-checks the Chinese operator copy for user todos, agent priorities, showcase
+checks the English operator copy for user todos, agent priorities, showcase
 activity, quota guard state, per-project top-4 todo status, and state
 writeback, and rejects raw machine tokens such as `single_surface`,
 `focus_wait`, or raw internal slot constraints on the first screen. It also captures desktop

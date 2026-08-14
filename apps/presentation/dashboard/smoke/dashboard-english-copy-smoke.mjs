@@ -18,6 +18,11 @@ function sourceFiles(directory) {
 
 const files = [join(root, "index.html"), ...sourceFiles(sourceRoot)];
 const findings = [];
+const indexSource = readFileSync(join(root, "index.html"), "utf8");
+
+if (!indexSource.includes('<html lang="en">')) {
+  throw new Error('Dashboard document language must be declared as <html lang="en">');
+}
 
 for (const file of files) {
   const lines = readFileSync(file, "utf8").split(/\r?\n/u);
