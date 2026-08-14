@@ -238,14 +238,14 @@ function StatusContractFreshnessWarning({
     >
       <div className="flex flex-wrap items-center gap-2 font-semibold">
         <CircleAlert className="h-4 w-4" />
-        状态服务契约过旧
+        Status service contract is outdated
         <Badge variant="warning">schema v{issue.schemaVersion}</Badge>
       </div>
       <p className="mt-1">
-        这个 loopback live feed 低于 dashboard 期望的 schema v{expectedStatusContractSchemaVersion}；
-        可能是 `127.0.0.1:8766` 仍在运行旧 daemon。演示前运行
+        This loopback live feed is below the dashboard's expected schema v{expectedStatusContractSchemaVersion}.
+        The daemon on `127.0.0.1:8766` may still be outdated. Before a demo, run
         <span className="mx-1 font-mono">{issue.reloadHint}</span>
-        后刷新页面。
+        and then refresh the page.
       </p>
     </div>
   );
@@ -2252,7 +2252,7 @@ function UserTodoCallout({
     <div className="mt-3 rounded-md border border-emerald-200 bg-emerald-50 p-2 dark:border-emerald-900/60 dark:bg-emerald-950/30">
       <div className="flex flex-wrap items-center gap-2">
         <CheckCircle2 className="h-3.5 w-3.5 text-emerald-700 dark:text-emerald-300" />
-        <Badge variant="success">{blocksGate ? "先做用户待办" : focusWait ? "Owner blocker" : "Next user todo"}</Badge>
+        <Badge variant="success">{blocksGate ? "Resolve user Todo first" : focusWait ? "Owner blocker" : "Next user Todo"}</Badge>
         {count ? <Badge variant="neutral">{count}</Badge> : null}
       </div>
       <p className="mt-2 line-clamp-3 break-words text-sm font-medium leading-6 text-emerald-950 dark:text-emerald-100">
@@ -2260,12 +2260,12 @@ function UserTodoCallout({
       </p>
       {blocksGate ? (
         <p className="mt-1 text-xs font-medium leading-5 text-emerald-800 dark:text-emerald-200">
-          完成或明确暂缓这个用户待办后，再审批下面的 gate。
+          Complete or explicitly defer this user Todo before approving the gate below.
         </p>
       ) : null}
       {focusWait ? (
         <p className="mt-1 text-xs font-medium leading-5 text-emerald-800 dark:text-emerald-200">
-          有新 owner evidence、clean baseline 或外部 eval 前保持 focus wait，不恢复 delivery。
+          Keep focus wait until new owner evidence, a clean baseline, or an external evaluation is available; do not resume delivery.
         </p>
       ) : null}
       {materials.length > 0 ? (
@@ -2369,87 +2369,87 @@ async function copyTextToClipboard(value: string) {
 function humanReviewPrompt(kind?: UserActionKind) {
   if (kind === "reward") {
     return {
-      question: "是否把这次判断记录为 run-bound human_reward？",
-      reply: "同意记录 / 暂不同意 + 一句话原因。",
-      boundary: "只有去掉 --dry-run 才会写 human_reward 和 active-state 摘要；这不是 write-control、controller opt-in 或生产动作授权。",
+      question: "Record this judgment as a run-bound human_reward?",
+      reply: "Approve recording / do not approve yet, plus one short reason.",
+      boundary: "human_reward and the active-state summary are written only after --dry-run is removed. This does not authorize write control, controller opt-in, or production actions.",
     };
   }
   if (kind === "controller") {
     return {
-      question: "是否允许目标项目进入 read-only/controller opt-in？",
-      reply: "同意先做 read-only map dry-run / 暂不同意 + 一句话原因。",
-      boundary: "这只授权项目 Agent 预览 dry-run 路径；不写 operator gate、run history、write-control、实验控制或生产动作。",
+      question: "Allow the target project to enter read-only/controller opt-in?",
+      reply: "Approve a read-only map dry-run first / do not approve yet, plus one short reason.",
+      boundary: "This authorizes only a dry-run preview by the project Agent. It does not write an operator gate, run history, write control, experiment control, or production state.",
     };
   }
   if (kind === "codex") {
     return {
-      question: "是否让项目 Agent 沿 safe local path 继续？",
-      reply: "同意继续 / 暂不同意 + 一句话原因。",
-      boundary: "如果下一步需要写入、reward append、approval 或 write-control，项目 Agent 必须先停下等明确授权。",
+      question: "Let the project Agent continue along the safe local path?",
+      reply: "Approve continuation / do not approve yet, plus one short reason.",
+      boundary: "The project Agent must stop for explicit authorization if the next step requires writes, a reward append, approval, or write control.",
     };
   }
   if (kind === "evidence") {
     return {
-      question: "是否继续等待外部证据，而不升级成决策建议？",
-      reply: "继续等待 / 不继续等待 + 一句话原因。",
-      boundary: "观察状态不是 reward、approval 或 controller opt-in。",
+      question: "Keep waiting for external evidence without escalating to a decision recommendation?",
+      reply: "Keep waiting / stop waiting, plus one short reason.",
+      boundary: "An observation state is not a reward, approval, or controller opt-in.",
     };
   }
   if (kind === "health") {
     return {
-      question: "是否先修健康阻塞，再讨论 reward/controller/codex handoff？",
-      reply: "先修阻塞 / 暂不处理 + 一句话原因。",
-      boundary: "健康修复不等于授权 reward append、approval 或 write-control。",
+      question: "Repair the health blocker before discussing reward, controller, or Codex handoff?",
+      reply: "Repair the blocker first / do not act yet, plus one short reason.",
+      boundary: "A health repair does not authorize a reward append, approval, or write control.",
     };
   }
   return {
-    question: "当前是否需要转给项目 Agent 继续处理？",
-    reply: "继续 / 不继续 / 继续观察 + 一句话原因。",
-    boundary: "本回复不自动写 reward、approval、controller opt-in 或 write-control。",
+    question: "Should this be handed to the project Agent now?",
+    reply: "Continue / stop / keep observing, plus one short reason.",
+    boundary: "This reply does not automatically write a reward, approval, controller opt-in, or write control.",
   };
 }
 
 function controllerReplyLine(goalId: string) {
-  return `同意 ${goalId} 先做 read-only map dry-run / 暂不同意 + 一句话原因。`;
+  return `Approve a read-only map dry-run for ${goalId} first / do not approve yet, plus one short reason.`;
 }
 
 function controllerApprovalReason(goalId: string) {
-  return `同意 ${goalId} 先做 read-only map dry-run，不授权写入或生产动作`;
+  return `Approve a read-only map dry-run for ${goalId}; do not authorize writes or production actions`;
 }
 
 function durableOperatorGateRecordRule(kind?: UserActionKind) {
   if (kind !== "controller") {
     return null;
   }
-  return "记录规则：如需持久记录本次判断，先用本地 operator-gate dry-run 预览；确认写入时去掉 --dry-run；写入会生成 operator_gate_resume_contract_v0，只在该决策点 rebase 当前权威状态，不回滚或带回整个仓库；拒绝/暂缓用 reject/defer + public-safe 原因。";
+  return "Record rule: preview this judgment with the local operator-gate dry-run. Remove --dry-run only after write confirmation. The write creates operator_gate_resume_contract_v0 and rebases current authoritative state only at this decision point; it does not roll back or restore the repository. Use reject/defer with a public-safe reason when declining or postponing.";
 }
 
 function suggestedDecisionLine(kind?: UserActionKind, item?: UserActionSummaryItem, goalId?: string) {
   if (kind === "controller") {
     if (item?.operatorQuestion && firstOpenTodo(item.userTodos)) {
-      return "先完成/确认用户待办，再判断是否同意 gate；不授权写入或生产动作。";
+      return "Complete or confirm the user Todo before deciding on the gate; do not authorize writes or production actions.";
     }
     const targetGoalId = goalId ?? item?.goalId;
-    const lead = targetGoalId ? `同意 ${targetGoalId} 先做` : "同意先做";
+    const lead = targetGoalId ? `Approve ${targetGoalId} to run` : "Approve running";
     const question = item?.operatorQuestion ?? "";
     if (question.includes("read-only map")) {
-      return `${lead} read-only map dry-run；不授权写入或生产动作。`;
+      return `${lead} a read-only map dry-run first; do not authorize writes or production actions.`;
     }
-    return `${lead}只读 controller dry-run；不授权写入或生产动作。`;
+    return `${lead} a read-only controller dry-run first; do not authorize writes or production actions.`;
   }
   if (kind === "reward") {
-    return "同意记录这次 human reward / 暂不同意，原因是...";
+    return "Approve recording this human reward / do not approve yet, because...";
   }
   if (kind === "codex") {
-    return "同意让 Codex 沿 safe path 继续；如需写入再单独请求授权。";
+    return "Approve Codex continuing along the safe path; request separate authorization for any write.";
   }
   if (kind === "evidence") {
-    return "继续等待外部证据；暂不升级成决策建议。";
+    return "Keep waiting for external evidence; do not escalate to a decision recommendation yet.";
   }
   if (kind === "health") {
-    return "先修健康阻塞；暂不处理 reward/controller/codex handoff。";
+    return "Repair the health blocker first; do not process reward, controller, or Codex handoff yet.";
   }
-  return "继续 / 不继续 / 继续观察，并补一句原因。";
+  return "Continue / stop / keep observing, plus one short reason.";
 }
 
 function normalizeConflictRisk(value?: string | null) {
@@ -2553,8 +2553,8 @@ function buildAuthorityCoverageFromCounts({
   return {
     badge,
     reviewLine: isDeclared
-      ? `权威源：已声明；${pathText}；${entryText}；topic ${topicCount}；${riskText}${materialText ? `；${materialText}` : ""}${deprecated ? `；deprecated ${deprecated}` : ""}。`
-      : "权威源：未声明 authority registry；只能看到普通 authority sources。",
+      ? `Authority sources: declared; ${pathText}; ${entryText}; topics ${topicCount}; ${riskText}${materialText ? `; ${materialText}` : ""}${deprecated ? `; deprecated ${deprecated}` : ""}.`
+      : "Authority sources: no authority registry is declared; only ordinary authority sources are visible.",
     shortLine: isDeclared
       ? `${entryText}; topic ${topicCount}; ${materialText ? `${materialText}; ` : ""}${riskText}`
       : "authority registry not declared",
@@ -2640,13 +2640,13 @@ const quotaStateLabel: Record<string, string> = {
 };
 
 const quotaStateReviewLabel: Record<string, string> = {
-  blocked_health: "先修健康阻塞",
-  eligible: "可自动推进",
-  focus_wait: "等待 owner evidence / clean baseline / external eval",
-  operator_gate: "等待人或控制器决策",
-  paused: "自动 compute 已暂停",
-  throttled: "本窗口配额已用完",
-  waiting: "等待证据或下一步",
+  blocked_health: "repair the health blocker first",
+  eligible: "automatic advancement is allowed",
+  focus_wait: "waiting for owner evidence, a clean baseline, or an external evaluation",
+  operator_gate: "waiting for a user or controller decision",
+  paused: "automatic compute is paused",
+  throttled: "the quota for this window is exhausted",
+  waiting: "waiting for evidence or the next step",
 };
 
 function quotaVariant(state?: string | null): BadgeVariant {
@@ -2681,12 +2681,12 @@ function buildQuotaView(quota?: ComputeQuota | null): QuotaView | undefined {
   const recovery = isOutcomeFloorRecoveryQuota(quota);
   const stateLabel = recovery ? "Recovery allowed" : quotaStateLabel[state] ?? state;
   const reviewState = recovery
-    ? `需要 Codex 做一次 ${recoveryEvidenceLabel(quota)} recovery`
+    ? `Codex must perform one ${recoveryEvidenceLabel(quota)} recovery`
     : quotaStateReviewLabel[state] ?? state;
   return {
     label: `Quota ${computeText}`,
     shortLine: `${stateLabel}; ${spent}/${allowed} slots`,
-    reviewLine: `配额：compute ${computeText}；${reviewState}；${spent}/${allowed} slots。`,
+    reviewLine: `Quota: compute ${computeText}; ${reviewState}; ${spent}/${allowed} slots.`,
     variant: quotaVariant(state),
   };
 }
@@ -2708,12 +2708,12 @@ function isOutcomeFloorRecoveryQuota(quota?: ComputeQuota | null) {
 function recoveryEvidenceLabel(quota?: ComputeQuota | null) {
   const targets = quota?.must_advance ?? [];
   if (targets.some((target) => target === "ranker_or_cross_domain_evidence")) {
-    return "排序器 / 跨域证据";
+    return "ranker or cross-domain evidence";
   }
   if (targets.length > 0) {
     return targets.map(shareMachineLabel).join(" / ");
   }
-  return "结果级证据";
+  return "outcome-level evidence";
 }
 
 function formatLatestValidation(validation?: ProjectAssetLatestValidation | null) {
@@ -3538,84 +3538,84 @@ const shareGoalSpecs: ShareGoalSpec[] = [
   {
     id: "showcase-user-gate-safe-side-path",
     label: "0617 User Gate",
-    subtitle: "公开 showcase / safe side path",
-    emphasis: "把用户决策、Agent 待办和安全侧路拆开管理：该等人的地方明确等人。",
+    subtitle: "Public showcase / safe side path",
+    emphasis: "Manage user decisions, Agent Todos, and safe side paths separately, with explicit waits wherever a person must decide.",
     accent: "border-t-emerald-500",
     icon: GitBranch,
   },
   {
     id: "showcase-creator-operator",
     label: "Creator Operator",
-    subtitle: "合成案例 / 长程内容运营",
-    emphasis: "让多个 Agent 围绕热点、素材、洞察和创作 backlog 持续推进，但只展示脱敏 showcase 数据。",
+    subtitle: "Synthetic case / long-running content operations",
+    emphasis: "Keep multiple Agents advancing trends, source material, insights, and the creative backlog while displaying only sanitized showcase data.",
     accent: "border-t-amber-500",
     icon: Gauge,
   },
   {
     id: "showcase-side-agent-self-iteration",
-    label: "Peer Agent 自迭代",
-    subtitle: "公开 repo 事实 / 平级协作",
-    emphasis: "平级 Agent 通过 claim、边界和独立 worktree 推进产品化、文档与验证。",
+    label: "Peer Agent Self-Iteration",
+    subtitle: "Public repository facts / peer coordination",
+    emphasis: "Peer Agents advance productization, documentation, and validation through claims, boundaries, and independent worktrees.",
     accent: "border-t-rose-500",
     icon: ShieldCheck,
   },
   {
     id: "loopx-meta",
     label: "LoopX Meta",
-    subtitle: "控制面自举与稳定性",
-    emphasis: "把观察循环转成状态、配额、active-state 的可验证产品改动。",
+    subtitle: "Control-plane self-bootstrap and stability",
+    emphasis: "Turn observation loops into verifiable product changes across status, quota, and active state.",
     accent: "border-t-sky-500",
     icon: Radar,
   },
 ];
 
 const shareStatusLabel: Record<string, string> = {
-  dashboard_home_control_plane_promotion: "主屏已提升",
-  dashboard_home_docs_contract_alignment: "主屏文档合约已对齐",
-  dashboard_home_route_smoke_contract: "主屏路由合约已验证",
-  state_refreshed: "状态已刷新",
-  quota_slot_spent: "已记录配额",
-  side_bypass_tau2_non_category_profile_admission_sweep: "独立证据扫描",
+  dashboard_home_control_plane_promotion: "Control-plane home promoted",
+  dashboard_home_docs_contract_alignment: "Home documentation contract aligned",
+  dashboard_home_route_smoke_contract: "Home route contract verified",
+  state_refreshed: "State refreshed",
+  quota_slot_spent: "Quota recorded",
+  side_bypass_tau2_non_category_profile_admission_sweep: "Independent evidence scan",
 };
 
 const shareDeliveryScaleLabel: Record<string, string> = {
-  coherent_batch: "成组交付",
-  implementation: "实现改动",
-  multi_surface: "多面改动",
-  single_surface: "单面改动",
-  test_only: "仅测试合约",
+  coherent_batch: "Coherent batch",
+  implementation: "Implementation change",
+  multi_surface: "Multi-surface change",
+  single_surface: "Single-surface change",
+  test_only: "Test-only contract",
 };
 
 const shareDeliveryOutcomeLabel: Record<string, string> = {
-  outcome_gap: "产出差距",
-  primary_goal_outcome: "主目标进展",
-  surface_only: "仅表层进展",
+  outcome_gap: "Outcome gap",
+  primary_goal_outcome: "Primary goal progress",
+  surface_only: "Surface-only progress",
 };
 
 const shareQuotaLabel: Record<string, string> = {
-  blocked_health: "健康阻塞",
-  eligible: "可自动推进",
-  focus_wait: "暂缓不花配额",
-  operator_gate: "等待用户决策",
-  paused: "已暂停",
-  throttled: "quota 已满",
-  waiting: "等待下一步",
+  blocked_health: "Health blocked",
+  eligible: "Automatic advancement allowed",
+  focus_wait: "Paused without quota spend",
+  operator_gate: "Waiting for a user decision",
+  paused: "Paused",
+  throttled: "Quota exhausted",
+  waiting: "Waiting for the next step",
 };
 
 const shareWaitingLabel: Record<string, string> = {
-  clear: "无需关注",
-  codex: "Agent 可处理",
-  controller: "控制器待确认",
-  external_evidence: "等待外部证据",
-  user_or_controller: "用户待确认",
+  clear: "No attention needed",
+  codex: "Agent can act",
+  controller: "Controller confirmation needed",
+  external_evidence: "Waiting for external evidence",
+  user_or_controller: "User confirmation needed",
 };
 
 const eventClassLabel: Record<string, string> = {
-  accounting: "花费记录",
-  decision: "人类决策",
-  evidence: "证据观察",
-  state: "状态刷新",
-  work: "实际推进",
+  accounting: "Accounting",
+  decision: "Human decisions",
+  evidence: "Evidence observations",
+  state: "State refreshes",
+  work: "Material progress",
 };
 
 const eventClassOrder = ["work", "evidence", "decision", "accounting", "state"] as const;
@@ -3631,7 +3631,7 @@ function cleanShareText(value?: string | null) {
 function compactShareText(value?: string | null, limit = 132) {
   const text = cleanShareText(value);
   if (!text) {
-    return "暂无";
+    return "None";
   }
   return text.length > limit ? `${text.slice(0, limit - 3).trimEnd()}...` : text;
 }
@@ -3645,12 +3645,7 @@ function shareMachineLabel(value?: string | null) {
     ?? shareDeliveryScaleLabel[raw]
     ?? shareDeliveryOutcomeLabel[raw]
     ?? shareQuotaLabel[raw]
-    ?? raw
-      .replace(/_/g, " ")
-      .replace(/\bquota\b/g, "配额")
-      .replace(/\bguard\b/g, "守卫")
-      .replace(/\bhandoff\b/g, "交接")
-      .replace(/\bstate\b/g, "状态");
+    ?? raw.replace(/_/g, " ");
 }
 
 function shareRowById(rows: GoalDirectoryRow[]) {
@@ -3693,12 +3688,12 @@ function shareDecisionKindLabel(kind?: string | null) {
 
 function shareDecisionFreshnessStateLabel(state?: string | null) {
   if (state === "stale_rebase_required") {
-    return "已过期，需 rebase";
+    return "Stale; rebase required";
   }
   if (state === "rebase_required") {
-    return "有后续事件，需 rebase";
+    return "Newer events; rebase required";
   }
-  return shareMachineLabel(state) || "需 rebase";
+  return shareMachineLabel(state) || "Rebase required";
 }
 
 function getShareTodos(row: GoalDirectoryRow | undefined, role: "user" | "agent") {
@@ -3729,14 +3724,14 @@ type ShareTopTodoItem = {
 };
 
 function shareTodoRoleLabel(role: ShareTodoRole) {
-  return role === "user" ? "用户" : "Agent";
+  return role === "user" ? "User" : "Agent";
 }
 
 function shareTodoStatusLabel(todo: ShareTopTodoItem) {
   if (todo.done) {
-    return "已完成";
+    return "Done";
   }
-  return todo.role === "user" ? "待用户" : "待 Agent";
+  return todo.role === "user" ? "Waiting for user" : "Waiting for Agent";
 }
 
 function shareTodoStatusVariant(todo: ShareTopTodoItem): BadgeVariant {
@@ -3782,7 +3777,7 @@ function ShareTopTodoList({
   if (todos.length === 0) {
     return (
       <div className={cn("rounded-md border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500", className)}>
-        当前没有可展示的项目 todo。
+        No project Todo is available to display.
       </div>
     );
   }
@@ -3838,7 +3833,7 @@ function ShareDependencyBlockerList({
           key={`${blocker.goal_id}-${blocker.index ?? itemIndex}`}
         >
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="warning">依赖阻塞</Badge>
+            <Badge variant="warning">Dependency blocker</Badge>
             <span className="break-all text-[11px] font-semibold text-amber-700">{blocker.goal_id}</span>
             {blocker.waiting_on ? (
               <span className="text-[11px] font-medium text-amber-700">
@@ -3853,7 +3848,7 @@ function ShareDependencyBlockerList({
       ))}
       {blockers.open_count > items.length ? (
         <div className="text-[11px] font-medium text-amber-700">
-          另有 {blockers.open_count - items.length} 项依赖阻塞未展开。
+          {blockers.open_count - items.length} more dependency blockers are not expanded.
         </div>
       ) : null}
     </div>
@@ -3882,7 +3877,7 @@ function ShareDecisionFreshnessWarning({
           key={`${item.decision_kind ?? "decision"}-${item.decision_at ?? itemIndex}`}
         >
           <div className="flex flex-wrap items-center gap-2">
-            <Badge variant="warning">决策需 rebase</Badge>
+            <Badge variant="warning">Decision rebase required</Badge>
             <span className="text-[11px] font-semibold text-amber-700">
               {shareDecisionKindLabel(item.decision_kind)}
             </span>
@@ -3892,18 +3887,18 @@ function ShareDecisionFreshnessWarning({
           </div>
           <p className={cn("mt-1 break-words text-sm leading-6 text-amber-950", compact ? "line-clamp-2" : "line-clamp-3")}>
             {compact
-              ? "审批或转交前先重读当前控制面状态；这不是仓库回滚。"
-              : "审批或转交前先重读 registry / active state / quota / run status；旧聊天或旧 gate 不能直接当当前授权，这不是仓库回滚。"}
+              ? "Re-read current control-plane state before approval or handoff; this is not a repository rollback."
+              : "Re-read the registry, active state, quota, and run status before approval or handoff. Old chats and gates are not current authority; this is not a repository rollback."}
           </p>
           <div className="mt-1 flex flex-wrap gap-2 text-[11px] font-medium text-amber-700">
-            <span>7d 新事件 {item.newer_event_count_7d ?? 0}</span>
-            {item.age_days != null ? <span>决策年龄 {Math.round(item.age_days)}d</span> : null}
+            <span>New events in 7d: {item.newer_event_count_7d ?? 0}</span>
+            {item.age_days != null ? <span>Decision age: {Math.round(item.age_days)}d</span> : null}
           </div>
         </div>
       ))}
       {items.length > visible.length ? (
         <div className="text-[11px] font-medium text-amber-700">
-          另有 {items.length - visible.length} 个旧决策需要 rebase。
+          {items.length - visible.length} more stale decisions require rebase.
         </div>
       ) : null}
     </div>
@@ -3936,44 +3931,44 @@ function shareStatusForGoal(view: ShareGoalView): { label: string; summary: stri
   const quotaState = quota?.state ?? "waiting";
   if (!view.row) {
     return {
-      label: "未接入",
-      summary: "全局状态里还没有这个目标的 current projection。",
+      label: "Not connected",
+      summary: "Global status does not yet contain a current projection for this goal.",
       variant: "neutral",
     };
   }
   if (isOutcomeFloorRecoveryQuota(quota)) {
     const gap = view.row.queueItem?.handoff_readiness?.post_handoff_outcome_gap_streak ?? quota?.post_handoff_outcome_gap_streak ?? 0;
     return {
-      label: "需要 Codex recovery",
-      summary: `连续 ${gap || 1} 次产出差距；下一步只做 ${recoveryEvidenceLabel(quota)}，或写回具体阻塞。`,
+      label: "Codex recovery required",
+      summary: `${gap || 1} consecutive outcome gaps; next, produce only ${recoveryEvidenceLabel(quota)} or write back a concrete blocker.`,
       variant: "warning",
     };
   }
   if (view.spec.id === "showcase-user-gate-safe-side-path" && (view.userTodos?.open_count ?? 0) > 0) {
     return {
-      label: "用户待办已捕获",
-      summary: "用户决策被单独留给 owner；Agent 只推进与该决策独立的安全侧路。",
+      label: "User Todo captured",
+      summary: "The user decision remains with the owner; the Agent advances only safe side paths independent of that decision.",
       variant: "warning",
     };
   }
   if (view.spec.id === "showcase-creator-operator") {
     return {
-      label: "合成场景主动推进",
-      summary: "创作运营 backlog 可持续推进，但前台只呈现公开 showcase 和合成数据。",
+      label: "Synthetic scenario advancing",
+      summary: "The creative-operations backlog can keep advancing, while the frontstage shows only public showcases and synthetic data.",
       variant: "info",
     };
   }
   if (view.spec.id === "loopx-meta") {
     return {
-      label: "控制面健康",
-      summary: "全局注册表、配额守卫、active-state 刷新处于可观测闭环。",
+      label: "Control plane healthy",
+      summary: "The global registry, quota guard, and active-state refresh form an observable closed loop.",
       variant: "success",
     };
   }
   if (quotaState === "eligible") {
     return {
-      label: "可自动推进",
-      summary: "当前没有用户闸门，Agent 可做一个有边界、有验证、有写回的小段推进。",
+      label: "Automatic advancement allowed",
+      summary: "No user gate is open, so the Agent can complete one bounded segment with validation and writeback.",
       variant: "success",
     };
   }
@@ -3997,7 +3992,7 @@ function ShareDecisionFrame({
   const recommendedAction = projectAsset?.next_action ?? view.row?.queueItem?.recommended_action ?? status.summary;
   const safetyBoundary = projectAsset?.stop_condition
     ?? view.row?.queueItem?.next_handoff_condition
-    ?? "未显式授权写入或生产动作；只按当前 quota / handoff 边界推进。";
+    ?? "Writes and production actions are not explicitly authorized; advance only within the current quota and handoff boundary.";
   const firstUserTodo = firstOpenTodo(view.userTodos);
   const firstAgentTodo = firstOpenTodo(view.agentTodos);
   const missingTodoRoles = projectAsset?.todo_projection_gap?.missing_roles?.length
@@ -4005,14 +4000,14 @@ function ShareDecisionFrame({
     : null;
 
   const rows: Array<readonly [string, string]> = [
-    ["等待方", waitingOwner],
-    ["推荐动作", compactShareText(recommendedAction, 108)],
-    ["安全边界", compactShareText(safetyBoundary, 108)],
-    ["首个用户 Todo", compactShareText(firstUserTodo?.text, 108)],
-    ["最高优 Agent Todo", compactShareText(firstAgentTodo?.text, 108)],
+    ["Waiting on", waitingOwner],
+    ["Recommended action", compactShareText(recommendedAction, 108)],
+    ["Safety boundary", compactShareText(safetyBoundary, 108)],
+    ["First user Todo", compactShareText(firstUserTodo?.text, 108)],
+    ["Top Agent Todo", compactShareText(firstAgentTodo?.text, 108)],
   ];
   if (missingTodoRoles) {
-    rows.push(["Todo 投影缺口", `missing roles: ${missingTodoRoles}`]);
+    rows.push(["Todo projection gap", `missing roles: ${missingTodoRoles}`]);
   }
 
   return (
@@ -4021,8 +4016,8 @@ function ShareDecisionFrame({
       data-testid={`share-decision-frame-${view.spec.id}`}
     >
       <div className="mb-2 flex flex-wrap items-center gap-2">
-        <Badge variant="neutral">第一屏决策帧</Badge>
-        <span className="text-[11px] font-medium text-slate-500">先看等谁、能否推进、边界和下一步。</span>
+        <Badge variant="neutral">First-screen decision frame</Badge>
+        <span className="text-[11px] font-medium text-slate-500">See who is awaited, whether work can advance, the boundary, and the next step.</span>
       </div>
       <div className="grid gap-2 text-xs leading-5">
         {rows.map(([label, value]) => (
@@ -4038,7 +4033,7 @@ function ShareDecisionFrame({
 
 function shareStatusText(row?: GoalDirectoryRow) {
   if (!row) {
-    return "未接入";
+    return "Not connected";
   }
   return shareMachineLabel(row.status);
 }
@@ -4086,8 +4081,8 @@ function ShareProjectCard({ view }: { view: ShareGoalView }) {
   const lastEvidence = latest
     ? [
       shareMachineLabel(latest.classification),
-      latest.delivery_batch_scale ? `规模 ${shareMachineLabel(latest.delivery_batch_scale)}` : null,
-      latest.delivery_outcome ? `结果 ${shareMachineLabel(latest.delivery_outcome)}` : null,
+      latest.delivery_batch_scale ? `Scale: ${shareMachineLabel(latest.delivery_batch_scale)}` : null,
+      latest.delivery_outcome ? `Outcome: ${shareMachineLabel(latest.delivery_outcome)}` : null,
     ].filter(Boolean).join(" · ")
     : shareStatusText(view.row);
 
@@ -4117,15 +4112,15 @@ function ShareProjectCard({ view }: { view: ShareGoalView }) {
         <div className="mt-4 grid grid-cols-3 gap-2 text-center">
           <div className="rounded-md border border-slate-200 bg-slate-50 px-2 py-2">
             <div className="text-lg font-semibold text-slate-950">{shareTodoCount(view.userTodos)}</div>
-            <div className="text-[11px] font-medium text-slate-500">用户待办</div>
+            <div className="text-[11px] font-medium text-slate-500">User Todos</div>
           </div>
           <div className="rounded-md border border-slate-200 bg-slate-50 px-2 py-2">
             <div className="text-lg font-semibold text-slate-950">{shareTodoCount(view.agentTodos)}</div>
-            <div className="text-[11px] font-medium text-slate-500">Agent 待办</div>
+            <div className="text-[11px] font-medium text-slate-500">Agent Todos</div>
           </div>
           <div className="rounded-md border border-slate-200 bg-slate-50 px-2 py-2">
             <div className="text-lg font-semibold text-slate-950">{usage?.progress_signal_run_count_24h ?? 0}</div>
-            <div className="text-[11px] font-medium text-slate-500">24h 进展</div>
+            <div className="text-[11px] font-medium text-slate-500">24h progress</div>
           </div>
         </div>
 
@@ -4133,10 +4128,10 @@ function ShareProjectCard({ view }: { view: ShareGoalView }) {
           <div className="mb-2 flex items-center justify-between gap-3">
             <div className="text-xs font-semibold text-slate-500">Top-4 Todo</div>
             <div className="flex flex-wrap gap-1">
-              <Badge variant="warning">待用户</Badge>
-              <Badge variant="info">待 Agent</Badge>
-              <Badge variant="success">已完成</Badge>
-              {dependencyBlockers?.open_count ? <Badge variant="warning">依赖 {dependencyBlockers.open_count}</Badge> : null}
+              <Badge variant="warning">Waiting for user</Badge>
+              <Badge variant="info">Waiting for Agent</Badge>
+              <Badge variant="success">Done</Badge>
+              {dependencyBlockers?.open_count ? <Badge variant="warning">Dependencies {dependencyBlockers.open_count}</Badge> : null}
             </div>
           </div>
           <ShareTopTodoList view={view} />
@@ -4146,10 +4141,10 @@ function ShareProjectCard({ view }: { view: ShareGoalView }) {
       </div>
 
       <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-3">
-        <Badge variant={quotaVariant(quota?.state)}>{shareQuotaLabel[quota?.state ?? "waiting"] ?? (shareMachineLabel(quota?.state) || "等待下一步")}</Badge>
+        <Badge variant={quotaVariant(quota?.state)}>{shareQuotaLabel[quota?.state ?? "waiting"] ?? (shareMachineLabel(quota?.state) || "Waiting for the next step")}</Badge>
         <Badge variant="neutral">{shareWaitingLabel[view.row?.waitingOn ?? "clear"] ?? shareMachineLabel(view.row?.waitingOn)}</Badge>
         <Badge variant={view.row?.queueItem?.handoff_readiness?.ready ? "success" : "warning"}>
-          {view.row?.queueItem?.handoff_readiness?.ready ? "handoff 可执行" : "handoff 受控"}
+          {view.row?.queueItem?.handoff_readiness?.ready ? "Handoff executable" : "Handoff controlled"}
         </Badge>
         <span className="line-clamp-1 min-w-0 flex-1 text-xs text-slate-500">{lastEvidence}</span>
       </div>
@@ -4165,22 +4160,22 @@ function ShareTodoMatrix({ views }: { views: ShareGoalView[] }) {
     >
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-semibold tracking-normal text-slate-950">Todo 责任矩阵</h2>
+          <h2 className="text-2xl font-semibold tracking-normal text-slate-950">Todo Responsibility Matrix</h2>
           <p className="mt-1 text-sm leading-6 text-slate-600">
-            重点不是把所有项目都自动化掉，而是把“该人判断”和“该 Agent 推进”分清楚。
+            The goal is not to automate every project, but to distinguish human judgment from Agent advancement.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Badge variant="warning">待用户</Badge>
-          <Badge variant="info">待 Agent</Badge>
-          <Badge variant="success">已完成</Badge>
+          <Badge variant="warning">Waiting for user</Badge>
+          <Badge variant="info">Waiting for Agent</Badge>
+          <Badge variant="success">Done</Badge>
         </div>
       </div>
       <div className="mt-4 overflow-hidden rounded-lg border border-slate-200">
         <div className="grid grid-cols-[170px_minmax(0,1fr)_220px] gap-0 bg-slate-50 text-xs font-semibold text-slate-500">
-          <div className="px-3 py-2">项目</div>
-          <div className="px-3 py-2">Top-4 Todo（含状态）</div>
-          <div className="px-3 py-2 text-right">控制状态</div>
+          <div className="px-3 py-2">Project</div>
+          <div className="px-3 py-2">Top 4 Todos with status</div>
+          <div className="px-3 py-2 text-right">Control status</div>
         </div>
         <div className="divide-y divide-slate-200">
           {views.map((view) => {
@@ -4198,9 +4193,9 @@ function ShareTodoMatrix({ views }: { views: ShareGoalView[] }) {
                 <div className="border-l border-slate-200 px-3 py-3">
                   <ShareTopTodoList compact view={view} />
                   <div className="mt-2 flex flex-wrap gap-2 text-xs font-medium">
-                    <span className="text-amber-700">用户 {shareTodoCount(view.userTodos)}</span>
+                    <span className="text-amber-700">User {shareTodoCount(view.userTodos)}</span>
                     <span className="text-sky-700">Agent {shareTodoCount(view.agentTodos)}</span>
-                    {dependencyOpen > 0 ? <span className="text-amber-700">依赖阻塞 {dependencyOpen}</span> : null}
+                    {dependencyOpen > 0 ? <span className="text-amber-700">Dependency blockers {dependencyOpen}</span> : null}
                   </div>
                   <ShareDependencyBlockerList className="mt-2" compact view={view} />
                   <ShareDecisionFreshnessWarning className="mt-2" compact view={view} />
@@ -4329,70 +4324,70 @@ function ShareGuardEvidence({
     >
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-semibold tracking-normal text-slate-950">Guard / Evidence 控制信号</h2>
+          <h2 className="text-2xl font-semibold tracking-normal text-slate-950">Guard and evidence signals</h2>
           <p className="mt-1 text-sm leading-6 text-slate-600">
-            控制面的价值不是继续制造 todo，而是把何时停、何时推进、何时写回变成同一套证据。
+            The control plane aligns when to stop, advance, and write back around the same evidence.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Badge variant="warning">配额守卫</Badge>
-          <Badge variant="info">证据等待</Badge>
-          <Badge variant="success">状态写回</Badge>
+          <Badge variant="warning">Quota guard</Badge>
+          <Badge variant="info">Evidence wait</Badge>
+          <Badge variant="success">State writeback</Badge>
         </div>
       </div>
 
       <div className="mt-4 grid gap-4 xl:grid-cols-[1fr_1fr_1fr]">
         <ShareSignalCard
-          body={`连续 ${sideGap || 3} 次产出差距后，控制面暂停自动消耗；没有排序器 / 跨域证据，只能给阻塞说明。`}
+          body={`After ${sideGap || 3} consecutive outcome gaps, the control plane pauses automatic spend; without ranking or cross-domain evidence, only a blocker report is allowed.`}
           icon={ShieldCheck}
           metrics={[
-            { label: "触发阈值", value: `${sideGap || 3} 次产出差距` },
-            { label: "禁止路径", value: "单面改动" },
-            { label: "允许输出", value: "阻塞说明" },
+            { label: "Trigger threshold", value: `${sideGap || 3} outcome gaps` },
+            { label: "Disallowed path", value: "One-sided change" },
+            { label: "Allowed output", value: "Blocker report" },
           ]}
-          status={{ label: "no-spend 暂缓", variant: "warning" }}
+          status={{ label: "No-spend hold", variant: "warning" }}
           steps={[
-            { label: "触发", value: "表层小步重复" },
-            { label: "控制", value: "暂缓不花 quota" },
-            { label: "写回", value: "证据或 blocker" },
+            { label: "Trigger", value: "Repeated superficial steps" },
+            { label: "Control", value: "Hold without quota spend" },
+            { label: "Writeback", value: "Evidence or blocker" },
           ]}
-          title="独立 peer：防止重复小步"
+          title="Independent peer: prevent repeated small steps"
           tone="rose"
         />
 
         <ShareSignalCard
-          body={`24h 已花 ${creatorUsage?.quota_spend_slots_24h ?? 0} 个配额槽，进展信号 ${creatorUsage?.progress_signal_run_count_24h ?? 0}；创作运营推进必须落到任务、证据、回顾或可展示产物。`}
+          body={`In 24h, ${creatorUsage?.quota_spend_slots_24h ?? 0} quota slots were spent and ${creatorUsage?.progress_signal_run_count_24h ?? 0} progress signals were recorded; creative operations must produce a task, evidence, review, or displayable artifact.`}
           icon={Gauge}
           metrics={[
             { label: "24h quota", value: `${creatorUsage?.quota_spend_slots_24h ?? 0} slots` },
-            { label: "素材 backlog", value: "热点 / 洞察 / 语料" },
-            { label: "展示边界", value: "synthetic-only" },
+            { label: "Material backlog", value: "Trends / insights / corpus" },
+            { label: "Display boundary", value: "Synthetic only" },
           ]}
-          status={{ label: "主动推进", variant: "info" }}
+          status={{ label: "Active advancement", variant: "info" }}
           steps={[
-            { label: "触发", value: "长期创作目标" },
-            { label: "控制", value: "配额 + 证据边界" },
-            { label: "写回", value: "showcase + backlog" },
+            { label: "Trigger", value: "Long-running creative goal" },
+            { label: "Control", value: "Quota and evidence boundary" },
+            { label: "Writeback", value: "Showcase and backlog" },
           ]}
-          title="Creator Operator：昼夜不断的合成运营队列"
+          title="Creator operator: continuous synthetic operations queue"
           tone="amber"
         />
 
         <ShareSignalCard
-          body={`User-gate showcase 保留 ${gate?.userTodos?.open_count ?? 0} 个 owner 决策；Meta 24h 进展信号 ${metaUsage?.progress_signal_run_count_24h ?? 0}，当前合约错误 ${payload.contract.summary.errors}。`}
+          body={`The user-gate showcase retains ${gate?.userTodos?.open_count ?? 0} owner decisions; Meta recorded ${metaUsage?.progress_signal_run_count_24h ?? 0} progress signals in 24h, with ${payload.contract.summary.errors} current contract errors.`}
           icon={FileCheck2}
           metrics={[
-            { label: "公开 user gate", value: `${gate?.userTodos?.open_count ?? 0} open` },
-            { label: "Meta 进展", value: `${metaUsage?.progress_signal_run_count_24h ?? 0} signals` },
-            { label: "全局发现", value: `${payload.global_registry.summary.findings} findings` },
+            { label: "Public user gate", value: `${gate?.userTodos?.open_count ?? 0} open` },
+            { label: "Meta progress", value: `${metaUsage?.progress_signal_run_count_24h ?? 0} signals` },
+            { label: "Global findings", value: `${payload.global_registry.summary.findings} findings` },
           ]}
-          status={{ label: "已验证", variant: "success" }}
+          status={{ label: "Verified", variant: "success" }}
           steps={[
-            { label: "触发", value: "状态刷新" },
-            { label: "控制", value: "registry 真相源" },
-            { label: "写回", value: "active-state 写回" },
+            { label: "Trigger", value: "State refresh" },
+            { label: "Control", value: "Registry source of truth" },
+            { label: "Writeback", value: "Active-state writeback" },
           ]}
-          title="Showcase + Meta：状态真相"
+          title="Showcase and Meta: state truth"
           tone="emerald"
         />
       </div>
@@ -4414,7 +4409,7 @@ function ShareAutonomousBacklog({
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <Bot className="h-4 w-4 text-sky-700" />
-          <div className="text-sm font-semibold text-sky-950">可自动推进候选</div>
+          <div className="text-sm font-semibold text-sky-950">Automatic advancement candidates</div>
         </div>
         <Badge variant="info">{summary.open_count}</Badge>
       </div>
@@ -4468,9 +4463,9 @@ function ShareEventLedgerStrip({ summary }: { summary?: EventLedgerSummary | nul
         <div className="flex items-center gap-2">
           <History className="h-4 w-4 text-slate-700" />
           <div>
-            <div className="text-sm font-semibold text-slate-950">控制面事件账本投影</div>
+            <div className="text-sm font-semibold text-slate-950">Control-plane event ledger projection</div>
             <p className="mt-0.5 text-xs leading-5 text-slate-500">
-              Chat thread 只是 worker；这里展示的是 run history 的 compact 事件投影。
+              The chat thread is only a worker; this is the compact event projection from run history.
             </p>
           </div>
         </div>
@@ -4524,7 +4519,7 @@ function ShareEvidenceView({
   });
   const userOpenTotal = shareOpenTotal(views, "user");
   const agentOpenTotal = shareOpenTotal(views, "agent");
-  const blockedCount = views.filter((view) => shareStatusForGoal(view).label.includes("暂缓")).length;
+  const blockedCount = views.filter((view) => quotaStateForShare(view.row) === "focus_wait").length;
   const automation = payload.usage_summary?.totals.automation_run_count_24h ?? 0;
   const ledgerTotals = payload.event_ledger_summary?.totals;
   const progress = payload.usage_summary?.totals.progress_signal_run_count_24h ?? 0;
@@ -4542,26 +4537,26 @@ function ShareEvidenceView({
             <div className="flex flex-wrap items-start justify-between gap-4">
               <div className="max-w-3xl">
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="success">LoopX 控制面</Badge>
-                  <Badge variant="neutral">公开 showcase</Badge>
-                  <Badge variant={payload.ok ? "success" : "danger"}>{payload.ok ? "状态健康" : "健康阻塞"}</Badge>
+                  <Badge variant="success">LoopX control plane</Badge>
+                  <Badge variant="neutral">Public showcase</Badge>
+                  <Badge variant={payload.ok ? "success" : "danger"}>{payload.ok ? "Healthy state" : "Health blocked"}</Badge>
                 </div>
                 <h1 className="mt-3 text-3xl font-semibold leading-tight tracking-normal text-slate-950 sm:text-4xl sm:leading-tight">
-                  把多项目 Agent 工作变成可管理的 Todo、证据和配额
+                  Turn multi-project agent work into manageable Todos, evidence, and quota
                 </h1>
                 <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600">
-                  这个看板只展示公开 showcases：user gate、peer-agent 自迭代、creator operator 和 LoopX Meta 统一到同一套控制面。
-                  用户待办单独挂起，Agent 高优任务继续推进，配额守卫和交接合约负责防止重复空转。
+                  This dashboard shows public showcases only: user gates, peer-agent self-iteration, creator operators, and LoopX Meta in one control plane.
+                  User Todos pause independently while high-priority agent work continues; quota guards and handoff contracts prevent repeated idle loops.
                 </p>
               </div>
               <div className="flex gap-2">
                 <Button disabled={isLoading} onClick={toggleTheme} variant="secondary">
                   {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                  主题
+                  Theme
                 </Button>
                 <Button disabled={isLoading} onClick={onRefresh} variant="primary">
                   <RefreshCw className="h-4 w-4" />
-                  刷新证据
+                  Refresh evidence
                 </Button>
               </div>
             </div>
@@ -4572,36 +4567,36 @@ function ShareEvidenceView({
 
             <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
               <ShareKpi
-                detail="分享重点项目"
+                detail="Featured public projects"
                 icon={GitBranch}
-                label="覆盖项目"
+                label="Projects covered"
                 value={String(views.length)}
               />
               <ShareKpi
-                detail="打开 / 总数"
+                detail="Open / total"
                 icon={Users}
-                label="用户待办"
+                label="User Todos"
                 tone={userOpenTotal.open > 0 ? "warning" : "success"}
                 value={`${userOpenTotal.open}/${userOpenTotal.total}`}
               />
               <ShareKpi
-                detail="打开 / 总数"
+                detail="Open / total"
                 icon={Bot}
-                label="Agent 待办"
+                label="Agent Todos"
                 tone={agentOpenTotal.open > 0 ? "info" : "success"}
                 value={`${agentOpenTotal.open}/${agentOpenTotal.total}`}
               />
               <ShareKpi
-                detail={`${progress} 个进展信号；ledger work ${ledgerWork}`}
+                detail={`${progress} progress signals; ledger work ${ledgerWork}`}
                 icon={Gauge}
-                label="24h 自动回合"
+                label="24h automated runs"
                 tone="info"
                 value={String(automation)}
               />
               <ShareKpi
-                detail={`${ledgerEvidence} 个证据观察；重复小步会被拦住`}
+                detail={`${ledgerEvidence} evidence observations; repeated small steps are blocked`}
                 icon={ShieldCheck}
-                label="暂缓不花配额"
+                label="No-spend holds"
                 tone={blockedCount > 0 ? "warning" : "success"}
                 value={String(blockedCount)}
               />
@@ -4652,13 +4647,13 @@ function buildHumanFriendlyActionPacket({
       title: item.title,
       summary: item.summary,
       userTodoText: todo?.text,
-      agentTodoText: agentTodo?.text ?? `只做一次 ${evidenceLabel} recovery；如果证据范围不可用，写回具体 blocker 后停止。`,
+      agentTodoText: agentTodo?.text ?? `Perform one ${evidenceLabel} recovery only; if the evidence scope is unavailable, write back the specific blocker and stop.`,
       todoBlocksGate: false,
       operatorQuestion: null,
-      suggestedReply: `执行一次 outcome-floor recovery：只做 ${evidenceLabel} 或具体 blocker 写回；完成验证和状态写回后再记一次 quota。`,
-      gateFallbackDecision: `执行一次 outcome-floor recovery：只做 ${evidenceLabel} 或具体 blocker 写回。`,
-      boundary: "普通 delivery 仍被 outcome floor 阻塞；不要继续 summary/queue/contract 等表层传播，也不要做 synthetic-only 测试链。",
-      durableRecordRule: "记录规则：validated evidence/blocker -> refresh-state/run event -> quota spend once；没有完成 recovery artifact 就不 spend。",
+      suggestedReply: `Perform one outcome-floor recovery: produce ${evidenceLabel} or write back a specific blocker; record one quota spend only after validation and state writeback.`,
+      gateFallbackDecision: `Perform one outcome-floor recovery: produce ${evidenceLabel} or write back a specific blocker.`,
+      boundary: "Normal delivery remains blocked by the outcome floor; do not continue superficial summary, queue, or contract propagation, and do not build a synthetic-only test chain.",
+      durableRecordRule: "Record rule: validated evidence or blocker -> refresh-state/run event -> one quota spend; do not spend without a completed recovery artifact.",
       safePathLabel: item.safePathLabel || "Recovery handoff",
       command: item.safePathCommand ?? command,
       quotaShortLine: quotaView?.shortLine,
@@ -4677,12 +4672,12 @@ function buildHumanFriendlyActionPacket({
       title: item.title,
       summary: item.summary,
       userTodoText: todo?.text,
-      agentTodoText: agentTodo?.text ?? "只检查当前 state/status/history；保持 focus_wait 并用中文回报仍在等待什么。",
+      agentTodoText: agentTodo?.text ?? "Inspect current state, status, and history only; keep focus_wait and report what is still pending.",
       todoBlocksGate: false,
       operatorQuestion: null,
-      suggestedReply: "继续保持 focus wait；有新 owner evidence、clean baseline 或外部 eval 后再恢复 delivery。",
-      gateFallbackDecision: "继续保持 focus wait；有新 owner evidence、clean baseline 或外部 eval 后再恢复 delivery。",
-      boundary: "这不是 delivery approval；项目 Agent 只做 status/history inspection，不执行交付路径、写入、reward append 或生产动作。",
+      suggestedReply: "Keep focus wait; resume delivery only after new owner evidence, a clean baseline, or an external evaluation.",
+      gateFallbackDecision: "Keep focus wait; resume delivery only after new owner evidence, a clean baseline, or an external evaluation.",
+      boundary: "This is not delivery approval; the project agent may inspect status and history only, without delivery-path execution, writes, reward appends, or production actions.",
       durableRecordRule: null,
       safePathLabel: "Status/history inspection only",
       command,
@@ -4709,7 +4704,7 @@ function buildHumanFriendlyActionPacket({
   const reply = item.kind === "controller"
     ? controllerReplyLine(item.goalId)
     : approvedAgentCommand
-      ? "转发下方【给项目 Agent】即可。"
+      ? "Forward the Project Agent section below."
       : prompt.reply;
   const todoBlocksGate = Boolean(todo && item.operatorQuestion);
   return buildActionPacket({
@@ -4722,10 +4717,10 @@ function buildHumanFriendlyActionPacket({
     operatorQuestion: item.operatorQuestion,
     suggestedReply: reply,
     gateFallbackDecision: approvedAgentCommand
-      ? "直接转发给已认领的项目 Agent；不追加写权限、全局接管或生产动作授权。"
+      ? "Forward directly to the assigned project agent; this grants no additional write access, global control, or production authorization."
       : suggestedDecisionLine(item.kind, item, item.goalId),
     boundary: approvedAgentCommand
-      ? "只执行已批准的只读/dry-run agent_command；如需写入或更高权限，项目 Agent 必须再次停下。"
+      ? "Execute only the approved read-only or dry-run agent command; the project agent must stop again before any write or higher-privilege action."
       : prompt.boundary,
     durableRecordRule: durableOperatorGateRecordRule(item.kind),
     safePathLabel: approvedAgentCommand ? "Approved agent command" : item.safePathLabel,
@@ -5239,7 +5234,7 @@ function buildUserActionSummaryItems({
           title: "Run Codex recovery",
           badge: "Recovery",
           variant: "warning",
-          summary: `普通 delivery 被 outcome floor 阻塞；下一步只做一次 ${evidenceLabel}，或写回具体 blocker。`,
+          summary: `Normal delivery is blocked by the outcome floor; next, produce ${evidenceLabel} once or write back a specific blocker.`,
           detail: quota?.safe_bypass_policy ?? stopCondition,
           safePathLabel: "Recovery handoff",
           safePathCommand: buildHistoryCommand({ goalId: row.goal.id, registry, runtimeRoot }),
@@ -7344,7 +7339,7 @@ function EventLedgerSummaryPanel({ summary }: { summary?: EventLedgerSummary | n
       <CardHeader className="flex-wrap">
         <CardTitle className="flex items-center gap-2">
           <History className="h-4 w-4" />
-          控制面事件账本
+          Control-plane event ledger
         </CardTitle>
         <div className="flex flex-wrap gap-2">
           <Badge variant="info">{summary.source}</Badge>
@@ -7353,7 +7348,7 @@ function EventLedgerSummaryPanel({ summary }: { summary?: EventLedgerSummary | n
       </CardHeader>
       <CardContent>
         <p className="mb-3 text-sm leading-6 text-slate-600 dark:text-zinc-300">
-          Chat thread 不是 source of truth；这里是 run history 的 compact 投影，用来判断最近事实是推进、证据、决策、状态还是花费。
+          The chat thread is not the source of truth; this compact run-history projection classifies recent facts as work, evidence, decisions, state, or spend.
         </p>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
           {eventClassOrder.map((eventClass) => (
@@ -7438,7 +7433,7 @@ function PromotionReadinessSummaryPanel({ summary }: { summary?: PromotionReadin
       </CardHeader>
       <CardContent>
         <p className="mb-3 text-sm leading-6 text-slate-600 dark:text-zinc-300">
-          这里从同一份 append-only run history 观察 canary promotion readiness；chat thread 和安装器日志都不是 source of truth。
+          Canary promotion readiness comes from the same append-only run history; neither chat threads nor installer logs are the source of truth.
         </p>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
           <UsageMetric label="Freshness" value={status} />
@@ -7516,7 +7511,7 @@ function DecisionFreshnessSummaryPanel({ summary }: { summary?: DecisionFreshnes
       <CardHeader className="flex-wrap">
         <CardTitle className="flex items-center gap-2">
           <RotateCcw className="h-4 w-4" />
-          决策 freshness
+          Decision freshness
         </CardTitle>
         <div className="flex flex-wrap gap-2">
           <Badge variant={counts.rebase_required_count > 0 ? "warning" : "success"}>
@@ -7527,7 +7522,7 @@ function DecisionFreshnessSummaryPanel({ summary }: { summary?: DecisionFreshnes
       </CardHeader>
       <CardContent>
         <p className="mb-3 text-sm leading-6 text-slate-600 dark:text-zinc-300">
-          这里看旧 reward / gate 是否需要在审批或转交前重读当前控制面状态；exact replay 仍回到 append-only run history。
+          This shows whether an older reward or gate must re-read current control-plane state before approval or handoff; exact replay remains in append-only run history.
         </p>
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <UsageMetric label="Decisions" value={formatUsageCount(counts.decision_count)} />
@@ -7568,7 +7563,7 @@ function DecisionFreshnessSummaryPanel({ summary }: { summary?: DecisionFreshnes
           </div>
         ) : (
           <div className="mt-4 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-950 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-100">
-            当前样本里没有需要 rebase 的 checkpointed decision。
+            No checkpointed decisions in the current sample require rebasing.
           </div>
         )}
         {summary.proxy_note ? (
